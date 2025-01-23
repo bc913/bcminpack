@@ -40,6 +40,7 @@ extern "C" {
 #define __minpack_type_fcn_nn__        __minpack_attr__ void fcn_nn
 #define __minpack_type_fcnder_nn__     __minpack_attr__ void fcnder_nn
 #define __minpack_type_fcn_mn__        __minpack_attr__ void fcn_mn
+#define __minpack_type_fcn_bc_mn__     __minpack_attr__ void fcn_bc_mn
 #define __minpack_type_fcnder_mn__     __minpack_attr__ void fcnder_mn
 #define __minpack_type_fcnderstr_mn__  __minpack_attr__ void fcnderstr_mn
 #define __minpack_decl_fcn_nn__
@@ -56,32 +57,38 @@ extern "C" {
 #define __minpack_type_fcn_nn__        typedef void (*minpack_func_nn)
 #define __minpack_type_fcnder_nn__     typedef void (*minpack_funcder_nn)
 #define __minpack_type_fcn_mn__        typedef void (*minpack_func_mn)
+#define __minpack_type_fcn_bc_mn__     typedef void (*minpack_func_bc_mn)
 #define __minpack_type_fcnder_mn__     typedef void (*minpack_funcder_mn)
 #define __minpack_type_fcnderstr_mn__  typedef void (*minpack_funcderstr_mn)
 #define __minpack_decl_fcn_nn__        minpack_func_nn fcn_nn,
 #define __minpack_decl_fcnder_nn__     minpack_funcder_nn fcnder_nn,
 #define __minpack_decl_fcn_mn__        minpack_func_mn fcn_mn,
+#define __minpack_decl_fcn_bc_mn__     minpack_func_bc_mn fcn_bc_mn,
 #define __minpack_decl_fcnder_mn__     minpack_funcder_mn fcnder_mn,
 #define __minpack_decl_fcnderstr_mn__  minpack_funcderstr_mn fcnderstr_mn,
 #define __minpack_param_fcn_nn__       fcn_nn,
 #define __minpack_param_fcnder_nn__    fcnder_nn,
 #define __minpack_param_fcn_mn__       fcn_mn,
+#define __minpack_param_fcn_bc_mn__    fcn_bc_mn,
 #define __minpack_param_fcnder_mn__    fcnder_mn,
 #define __minpack_param_fcnderstr_mn__ fcnderstr_mn,
 #endif
 #undef __cminpack_type_fcn_nn__
 #undef __cminpack_type_fcnder_nn__
 #undef __cminpack_type_fcn_mn__
+#undef __cminpack_type_fcn_bc_mn__
 #undef __cminpack_type_fcnder_mn__
 #undef __cminpack_type_fcnderstr_mn__
 #undef __cminpack_decl_fcn_nn__
 #undef __cminpack_decl_fcnder_nn__
 #undef __cminpack_decl_fcn_mn__
+#undef __cminpack_decl_fcn_bc_mn__
 #undef __cminpack_decl_fcnder_mn__
 #undef __cminpack_decl_fcnderstr_mn__
 #undef __cminpack_param_fcn_nn__
 #undef __cminpack_param_fcnder_nn__
 #undef __cminpack_param_fcn_mn__
+#undef __cminpack_param_fcn_bc_mn__
 #undef __cminpack_param_fcnder_mn__
 #undef __cminpack_param_fcnderstr_mn__
 
@@ -117,6 +124,20 @@ __minpack_type_fcnder_nn__(const int *n, const __minpack_real__ *x, __minpack_re
 /* return a negative value to terminate lmdif1/lmdif */
 __minpack_type_fcn_mn__(const int *m, const int *n, const __minpack_real__ *x, __minpack_real__ *fvec,
                                int *iflag );
+
+
+/* for lmdif1 and lmdif */
+/*         calculate the functions at x and */
+/*         return this vector in fvec. */
+/*         if iflag = 1 the result is used to compute the residuals. */
+/*         if iflag = 2 the result is used to compute the Jacobian by finite differences. */
+/*         Jacobian computation requires exactly n function calls with iflag = 2. */
+/*         isuer - user defined integer array */
+/*         user - user defined real array */
+/* return a negative value to terminate lmdif1/lmdif */
+__minpack_type_fcn_bc_mn__(const int *m, const int *n, const __minpack_real__ *x, __minpack_real__ *fvec,
+                               int *iflag, const int* iuser, const __minpack_real__ *user );
+
 
 /* for lmder1 and lmder */
 /*         if iflag = 1 calculate the functions at x and */
@@ -194,6 +215,32 @@ void MINPACK_EXPORT __minpack_func__(lmdif)( __minpack_decl_fcn_mn__
 	      __minpack_real__ *qtf, __minpack_real__ *wa1, __minpack_real__ *wa2, __minpack_real__ *wa3,
 	      __minpack_real__ *wa4 );
 
+
+/* minimize the sum of the squares of nonlinear functions in N
+   variables by a modification of the Levenberg-Marquardt algorithm
+   (Jacobian calculated by a forward-difference approximation) */
+__minpack_attr__
+void MINPACK_EXPORT __minpack_func__(lmdif1bc)( __minpack_decl_fcn_bc_mn__
+	       const int *m, const int *n, __minpack_real__ *x, __minpack_real__ *fvec, 
+          const int* iuser, const __minpack_real__ *user, const __minpack_real__ *tol,
+	       int *info, int *iwa, __minpack_real__ *wa, const int *lwa );
+
+/* minimize the sum of the squares of nonlinear functions in N
+   variables by a modification of the Levenberg-Marquardt algorithm
+   (Jacobian calculated by a forward-difference approximation, more
+   general) */
+__minpack_attr__
+void MINPACK_EXPORT __minpack_func__(lmdifbc)( __minpack_decl_fcn_bc_mn__
+	      const int *m, const int *n, __minpack_real__ *x, __minpack_real__ *fvec, 
+         const int* iuser, const __minpack_real__ *user, const __minpack_real__ *ftol,
+	      const __minpack_real__ *xtol, const __minpack_real__ *gtol, const int *maxfev, const __minpack_real__ *epsfcn,
+	      __minpack_real__ *diag, const int *mode, const __minpack_real__ *factor, const int *nprint,
+	      int *info, int *nfev, __minpack_real__ *fjac, const int *ldfjac, int *ipvt,
+	      __minpack_real__ *qtf, __minpack_real__ *wa1, __minpack_real__ *wa2, __minpack_real__ *wa3,
+	      __minpack_real__ *wa4 );
+
+
+
 /* minimize the sum of the squares of nonlinear functions in N
    variables by a modification of the Levenberg-Marquardt algorithm
    (user-supplied Jacobian) */
@@ -253,6 +300,15 @@ __minpack_attr__
 void MINPACK_EXPORT __minpack_func__(fdjac2)(__minpack_decl_fcn_mn__
 	     const int *m, const int *n, __minpack_real__ *x, const __minpack_real__ *fvec, __minpack_real__ *fjac,
 	     const int *ldfjac, int *iflag, const __minpack_real__ *epsfcn, __minpack_real__ *wa);
+
+
+__minpack_attr__
+void MINPACK_EXPORT __minpack_func__(fdjac2bc)(__minpack_decl_fcn_bc_mn__
+	     const int *m, const int *n, __minpack_real__ *x, const __minpack_real__ *fvec, 
+        const int* iuser, const __minpack_real__ *user, __minpack_real__ *fjac,
+	     const int *ldfjac, int *iflag, const __minpack_real__ *epsfcn, __minpack_real__ *wa);
+
+
 
 /* compute a forward-difference approximation to the n by n jacobian
    matrix associated with a specified problem of n functions in n
