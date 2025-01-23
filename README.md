@@ -3,7 +3,7 @@ C/C++ Minpack [![Build Status](https://api.travis-ci.org/devernay/cminpack.png?b
 
 **[IMPORTANT]**
 
-This repo is cloned from [https://github.com/devernay/cminpack](https://github.com/devernay/cminpack) and reorganized for more efficient CMake usage especially through `FetchContent` facility. No change in source code. Examples and tests are excluded from default builds.
+This repo is cloned from [https://github.com/devernay/cminpack](https://github.com/devernay/cminpack) and reorganized for more efficient CMake usage especially through `FetchContent` facility. Minor changes in original code. Examples and tests are excluded from default builds.
 
 ```cmake
 # Configure under root dir
@@ -13,6 +13,8 @@ cmake --build out --config Debug
 # Release Build
 cmake --build out --config Release
 ```
+
+- `iuser` and `user` arrays are passed to lmdif implementations for customizations.
 ==========
 
 This is a C version of the minpack minimization package.
