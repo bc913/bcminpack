@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "cminpackp.h": "c",
+        "cminpack.h": "c",
+        "minpackp.h": "c",
+        "minpack.h": "c"
+    }
+}
