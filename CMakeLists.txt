@@ -11,24 +11,18 @@ project (CMINPACK C)
 string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
 list (APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
 include (${PROJECT_SOURCE_DIR}/cmake/cminpack_utils.cmake)
+
 # Set version and OS-specific settings
 set (CMINPACK_VERSION 1.3.11)
 set (CMINPACK_SOVERSION 1) # CMinpack ABI version
 DISSECT_VERSION ()
 GET_OS_INFO ()
 
-# Add an "uninstall" target
-configure_file ("${PROJECT_SOURCE_DIR}/cmake/uninstall_target.cmake.in"
-  "${PROJECT_BINARY_DIR}/uninstall_target.cmake" IMMEDIATE @ONLY)
-add_custom_target (uninstall "${CMAKE_COMMAND}" -P
-  "${PROJECT_BINARY_DIR}/uninstall_target.cmake")
-
-enable_testing ()
-
-option (BUILD_SHARED_LIBS "Build shared libraries instead of static." OFF)
-option (USE_BLAS "Compile cminpack using Fortran BLAS library if possible" OFF)
+option (CMINPACK_BUILD_SHARED_LIBS "Build shared libraries instead of static." OFF)
+option (CMINPACK_USE_BLAS "Compile cminpack using Fortran BLAS library if possible" OFF)
+option (CMINPACK_BUILD_EXAMPLES "Compile examples directory" OFF)
+option (CMINPACK_BUILD_TESTS OFF)
 set (CMINPACK_PRECISION "all" CACHE STRING "Precision variants to build ('s', 'd', 'ld', 'all')")
 
 #set (CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/../build)
@@ -78,7 +72,7 @@ elseif (${CMINPACK_PRECISION} STREQUAL all)
   endif ()
 endif ()
 
-if (BUILD_SHARED_LIBS)
+if (CMINPACK_BUILD_SHARED_LIBS)
   message (STATUS "Building shared libraries.")
   if (NOT DEFINED CMAKE_DEBUG_POSTFIX)
     set (CMAKE_DEBUG_POSTFIX _d)
@@ -108,7 +102,7 @@ endif ()
 foreach (cminpack_lib ${cminpack_libs})
   add_library (${cminpack_lib} ${cminpack_srcs})
   
-  if (OS_WIN AND BUILD_SHARED_LIBS)
+  if (OS_WIN AND CMINPACK_BUILD_SHARED_LIBS)
     add_custom_command(
       TARGET ${cminpack_lib} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${cminpack_lib}>  ${CMAKE_CURRENT_BINARY_DIR}/examples
@@ -124,7 +118,7 @@ foreach (cminpack_lib ${cminpack_libs})
     set(PC_CMINPACK_CFLAGS "-D__cminpack_long_double__")
   endif ()
 
-  if (BUILD_SHARED_LIBS)
+  if (CMINPACK_BUILD_SHARED_LIBS)
     target_compile_definitions (${cminpack_lib} PRIVATE CMINPACK_DLL_EXPORTS)
   else ()
     target_compile_definitions (${cminpack_lib} PUBLIC CMINPACK_NO_DLL)
@@ -189,6 +183,25 @@ foreach (cminpack_lib ${cminpack_libs})
 
 endforeach ()
 
-install (EXPORT CMinpackConfig DESTINATION share/cminpack NAMESPACE cminpack::)
 
-add_subdirectory (examples)
+#=========================
+#       EXAMPLES
+#=========================
+if(CMINPACK_BUILD_EXAMPLES)
+  add_subdirectory (examples)
+endif()
+
+#=========================
+#       TESTING
+#=========================
+if (CMINPACK_BUILD_TESTS)
+  enable_testing ()
+endif()
+
+# Add an "uninstall" target
+configure_file ("${PROJECT_SOURCE_DIR}/cmake/uninstall_target.cmake.in"
+  "${PROJECT_BINARY_DIR}/uninstall_target.cmake" IMMEDIATE @ONLY)
+add_custom_target (uninstall "${CMAKE_COMMAND}" -P
+  "${PROJECT_BINARY_DIR}/uninstall_target.cmake")  
+
+install (EXPORT CMinpackConfig DESTINATION share/cminpack NAMESPACE cminpack::)
